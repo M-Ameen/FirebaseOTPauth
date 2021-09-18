@@ -3,11 +3,13 @@ package com.example.firebaseotpauth;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -35,7 +37,23 @@ public class Login extends AppCompatActivity {
 
         phonenumber=getIntent().getStringExtra("mobile").toString();
         et_getotp=findViewById(R.id.et_getotp);
+        bt_verify=findViewById(R.id.bt_verify);
+
         mAuth=FirebaseAuth.getInstance();
+
+        defaultinitiateotp();
+        bt_verify.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (et_getotp.getText().toString().isEmpty()){
+                    Toast.makeText(Login.this, "Field is Empty", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    PhoneAuthCredential credential=PhoneAuthProvider.getCredential(otpid,et_getotp.getText().toString());
+                    signInWithPhoneAuthCredential(credential);
+                }
+            }
+        });
 
 
     }
@@ -55,11 +73,12 @@ public class Login extends AppCompatActivity {
                             @Override
                             public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
                                 signInWithPhoneAuthCredential(phoneAuthCredential);
+                                finish();
                             }
 
                             @Override
                             public void onVerificationFailed(@NonNull FirebaseException e) {
-
+                                Toast.makeText(Login.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         })          // OnVerificationStateChangedCallbacks
                         .build();
@@ -71,9 +90,9 @@ public class Login extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-
+                            startActivity(new Intent(Login.this,Dashboard.class));
                         } else {
-
+                            Toast.makeText(getApplicationContext(),"Sign in code error",Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
